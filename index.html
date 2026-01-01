@@ -218,9 +218,9 @@
       </label>
       <label>Рост
         <select id="setting-growth">
-          <option value="0">Обычный</option>
-          <option value="2">Высокий</option>
-          <option value="4">Огромный</option>
+          <option value="0">Масик</option>
+          <option value="2">Обычный</option>
+          <option value="4">Жир</option>
         </select>
       </label>
     </div>
@@ -236,13 +236,13 @@
       <div class="cw-lu-soundbox">
         <div class="cw-lu-sound-title">Звук клетки</div>
         <div class="cw-lu-sound-row" data-sound="0">[0] Без звука</div>
-        <div class="cw-lu-sound-row" data-sound="1">[1] Едва различимый треск</div>
-        <div class="cw-lu-sound-row" data-sound="2">[2] Тихий треск</div>
-        <div class="cw-lu-sound-row" data-sound="3">[3] Приглушённый треск</div>
-        <div class="cw-lu-sound-row" data-sound="4">[4] Громкий треск</div>
-        <div class="cw-lu-sound-row" data-sound="5">[5] Очень громкий треск</div>
-        <div class="cw-lu-sound-row" data-sound="6">[6] Очень громкий треск (громче)</div>
-        <div class="cw-lu-sound-row" data-sound="7">[7] Очень громкий треск (максимум)</div>
+        <div class="cw-lu-sound-row" data-sound="1">[1] Едва различимый звук</div>
+        <div class="cw-lu-sound-row" data-sound="2">[2] Тихий звук</div>
+        <div class="cw-lu-sound-row" data-sound="3">[3] Приглушённый звук</div>
+        <div class="cw-lu-sound-row" data-sound="4">[4] Громкий звук</div>
+        <div class="cw-lu-sound-row" data-sound="5">[5] Очень громкий звук</div>
+        <div class="cw-lu-sound-row" data-sound="6">[6] Очень громкий звук (громче)</div>
+        <div class="cw-lu-sound-row" data-sound="7">[7] Очень громкий звук (максимум)</div>
         <div class="cw-lu-sound-row" data-sound="danger">[X] Опасная клетка</div>
         <div class="cw-lu-sound-row" data-sound="hint">[?] Подсказка (замечена бомба)</div>
       </div>
@@ -255,11 +255,11 @@
   'use strict';
 
   const HINT_LU_REQUIRED   = 4;
-  const HINT_DURATION_MS   = 2000;
-  const BASE_HINT_CHANCE   = 0.25;
+  const HINT_DURATION_MS   = 100;
+  const BASE_HINT_CHANCE   = 0.3;
   const LU_HINT_MAX_BONUS  = 0.35;
   const HEIGHT_HINT_BONUS  = 0.25;
-  const HINT_CHANCE_MAX    = 0.9;
+  const HINT_CHANCE_MAX    = 0.6;
 
   const root         = document.getElementById('cw-lu-trainer-root');
   const boardEl      = root.querySelector('#lu-board');
