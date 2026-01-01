@@ -2,648 +2,647 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <title>Тренажёр Лазания CatWar</title>
+  <title>Тренажёр Лазания v1.0</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #111;
+      color: #eee;
+      font-family: Arial, sans-serif;
+    }
+    #cw-lu-trainer-root {
+      position: relative;
+      margin: 0 auto;
+      width: max-content;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: #eee;
+    }
+    #cw-lu-trainer-root, #cw-lu-trainer-root * { box-sizing: border-box; }
+    .cw-lu-window {
+      background: #222;
+      border: 1px solid #555;
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.7);
+      padding: 8px;
+      min-width: 420px;
+    }
+    .cw-lu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .cw-lu-title { font-weight: bold; font-size: 14px; }
+    .cw-lu-controls button {
+      font-size: 12px;
+      padding: 2px 8px;
+      cursor: pointer;
+      border: 1px solid #666;
+      background: #444;
+      color: #eee;
+      border-radius: 3px;
+    }
+    .cw-lu-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .cw-lu-controls button:hover:not(:disabled) { background: #555; }
+
+    .cw-lu-settings {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px 12px;
+      font-size: 11px;
+      padding: 6px;
+      margin-bottom: 6px;
+      background: #2a2a2a;
+      border-radius: 3px;
+    }
+    .cw-lu-settings label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .cw-lu-settings input,
+    .cw-lu-settings select {
+      font-size: 11px;
+      background: #555;
+      color: #fff;
+      border: 1px solid #777;
+      border-radius: 2px;
+      padding: 1px 2px;
+      width: 100%;
+    }
+
+    .cw-lu-status {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+      font-size: 12px;
+      padding: 4px;
+      background: #333;
+      border-radius: 3px;
+    }
+    .cw-lu-message {
+      margin-left: auto;
+      text-align: right;
+      font-weight: bold;
+    }
+
+    /* Поле + блок звуков */
+    .cw-lu-main {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .cw-lu-board,
+    .cw-lu-soundbox {
+      flex-shrink: 0; /* не даём flex сжимать ни поле, ни панель */
+    }
+
+    .cw-lu-board {
+      display: inline-grid;
+      gap: 1px;
+      background: #555;
+      padding: 1px;
+      grid-auto-rows: 24px; /* фиксированная высота строки */
+    }
+
+    .cw-lu-cell {
+      width: 24px !important;
+      height: 24px !important;
+      line-height: 24px;
+      background: #999;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      user-select: none;
+      transition: background-color 0.1s;
+      padding: 0;
+    }
+    .cw-lu-cell:hover { filter: brightness(1.1); }
+    .cw-lu-cell.cw-lu-revealed {
+      background: #ccc;
+      cursor: default;
+      color: #000;
+    }
+    .cw-lu-cell.cw-lu-flag {
+      background: #666;
+      color: #ffa500;
+    }
+    .cw-lu-cell.cw-lu-mine {
+      background: #c33;
+      color: #fff;
+    }
+    .cw-lu-cell.cw-lu-mine-hit {
+      background: #f00;
+      transform: scale(1.1);
+    }
+    .cw-lu-cell.cw-lu-hint-reveal {
+      /* Подсказка: только восклицательный знак, фон не перекрывается */
+      color: #ffa500;
+      text-shadow: 0 0 2px #000;
+      font-weight: bold;
+    }
+    .cw-lu-cell.cw-lu-path-highlight {
+      background-color: rgba(0, 255, 0, 0.3) !important;
+    }
+    .cw-lu-cell.cw-lu-radius-highlight {
+      background-color: rgba(150, 100, 255, 0.4) !important;
+    }
+
+    .cw-lu-n1{color:#00f}
+    .cw-lu-n2{color:#008000}
+    .cw-lu-n3{color:#f00}
+    .cw-lu-n4{color:#000080}
+    .cw-lu-n5{color:#800000}
+    .cw-lu-n6{color:#008080}
+    .cw-lu-n7{color:#000}
+    .cw-lu-n8{color:#808080}
+
+    .cw-lu-exit { box-shadow: 0 0 0 2px #0f0 inset; }
+    .cw-lu-base-safe { box-shadow: 0 0 0 2px #0af inset; }
+
+    /* панель звуков */
+    .cw-lu-soundbox {
+      background: #2a2a2a;
+      border-radius: 3px;
+      padding: 4px 6px;
+      font-size: 11px;
+      min-width: 170px;
+    }
+    .cw-lu-sound-title {
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+    .cw-lu-sound-row {
+      padding: 1px 3px;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+    .cw-lu-sound-row + .cw-lu-sound-row { margin-top: 1px; }
+    .cw-lu-sound-active {
+      background: #555;
+    }
+  </style>
 </head>
 <body>
-<script>
-// == Trainer v1.0, standalone ==
+<div id="cw-lu-trainer-root">
+  <div class="cw-lu-window">
+    <div class="cw-lu-header">
+      <span class="cw-lu-title">Тренажёр Лазания v1.0</span>
+      <div class="cw-lu-controls">
+        <button id="cw-lu-restart">Новая игра</button>
+      </div>
+    </div>
 
+    <div class="cw-lu-settings">
+      <label>Высота
+        <input type="number" id="setting-height" value="1" min="1" max="5">
+      </label>
+      <label>ЛУ
+        <input type="number" id="setting-lu" value="5" min="0" max="9">
+      </label>
+      <label>Погода
+        <select id="setting-weather">
+          <option value="0">Тепло</option>
+          <option value="3">Холодно</option>
+          <option value="5">Очень холодно</option>
+        </select>
+      </label>
+      <label>Рост
+        <select id="setting-growth">
+          <option value="0">Обычный</option>
+          <option value="2">Высокий</option>
+          <option value="4">Огромный</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="cw-lu-status">
+      <span>Бомб: <span id="lu-bombs">0</span></span>
+      <span>Время: <span id="lu-timer">0</span>с</span>
+      <span id="lu-message" class="cw-lu-message"></span>
+    </div>
+
+    <div class="cw-lu-main">
+      <div id="lu-board" class="cw-lu-board"></div>
+      <div class="cw-lu-soundbox">
+        <div class="cw-lu-sound-title">Звук клетки</div>
+        <div class="cw-lu-sound-row" data-sound="0">[0] Без звука</div>
+        <div class="cw-lu-sound-row" data-sound="1">[1] Едва различимый треск</div>
+        <div class="cw-lu-sound-row" data-sound="2">[2] Тихий треск</div>
+        <div class="cw-lu-sound-row" data-sound="3">[3] Приглушённый треск</div>
+        <div class="cw-lu-sound-row" data-sound="4">[4] Громкий треск</div>
+        <div class="cw-lu-sound-row" data-sound="5">[5] Очень громкий треск</div>
+        <div class="cw-lu-sound-row" data-sound="6">[6] Очень громкий треск (громче)</div>
+        <div class="cw-lu-sound-row" data-sound="7">[7] Очень громкий треск (максимум)</div>
+        <div class="cw-lu-sound-row" data-sound="danger">[X] Опасная клетка</div>
+        <div class="cw-lu-sound-row" data-sound="hint">[?] Подсказка (замечена бомба)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
 (function () {
   'use strict';
 
-  const HINT_LU_REQUIRED   = 4;      // авто-подсказки только с ЛУ >= 4
-  const HINT_DURATION_MS   = 1000;   // сколько миллисекунд виден "!"
-  const BASE_HINT_CHANCE   = 0.5;   // базовый шанс при ЛУ=4 и высоте=5
-  const LU_HINT_MAX_BONUS  = 0.35;   // максимум бонуса от ЛУ
-  const HEIGHT_HINT_BONUS  = 0.25;   // максимум бонуса от низкой высоты
-  const HINT_CHANCE_MAX    = 0.9;    // абсолютный потолок шанса подсказки
+  const HINT_LU_REQUIRED   = 4;
+  const HINT_DURATION_MS   = 2000;
+  const BASE_HINT_CHANCE   = 0.25;
+  const LU_HINT_MAX_BONUS  = 0.35;
+  const HEIGHT_HINT_BONUS  = 0.25;
+  const HINT_CHANCE_MAX    = 0.9;
 
-  function init() {
-    // Стили
-    const style = document.createElement('style');
-    style.id = 'cw-lu-trainer-style';
-    style.textContent = `
-body {
-  margin: 0;
-  padding: 20px;
-  background: #111;
-  color: #eee;
-  font-family: Arial, sans-serif;
-}
-#cw-lu-trainer-root {
-  position: relative;
-  margin: 0 auto;
-  width: max-content;
-  font-family: Arial, sans-serif;
-  font-size: 13px;
-  color: #eee;
-}
-#cw-lu-trainer-root, #cw-lu-trainer-root * { box-sizing: border-box; }
-.cw-lu-window {
-  background: #222;
-  border: 1px solid #555;
-  border-radius: 4px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.7);
-  padding: 8px;
-  min-width: 420px;
-}
-.cw-lu-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-.cw-lu-title { font-weight: bold; font-size: 14px; }
-.cw-lu-controls button {
-  font-size: 12px;
-  padding: 2px 8px;
-  cursor: pointer;
-  border: 1px solid #666;
-  background: #444;
-  color: #eee;
-  border-radius: 3px;
-}
-.cw-lu-controls button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.cw-lu-controls button:hover:not(:disabled) { background: #555; }
+  const root         = document.getElementById('cw-lu-trainer-root');
+  const boardEl      = root.querySelector('#lu-board');
+  const restartBtn   = root.querySelector('#cw-lu-restart');
+  const minesEl      = root.querySelector('#lu-bombs');
+  const timerEl      = root.querySelector('#lu-timer');
+  const msgEl        = root.querySelector('#lu-message');
+  const heightInput  = root.querySelector('#setting-height');
+  const luInput      = root.querySelector('#setting-lu');
+  const weatherInput = root.querySelector('#setting-weather');
+  const growthInput  = root.querySelector('#setting-growth');
 
-.cw-lu-settings {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px 12px;
-  font-size: 11px;
-  padding: 6px;
-  margin-bottom: 6px;
-  background: #2a2a2a;
-  border-radius: 3px;
-}
-.cw-lu-settings label {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.cw-lu-settings input,
-.cw-lu-settings select {
-  font-size: 11px;
-  background: #555;
-  color: #fff;
-  border: 1px solid #777;
-  border-radius: 2px;
-  padding: 1px 2px;
-  width: 100%;
-}
+  let game = null;
 
-.cw-lu-status {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 6px;
-  font-size: 12px;
-  padding: 4px;
-  background: #333;
-  border-radius: 3px;
-}
-.cw-lu-message {
-  margin-left: auto;
-  text-align: right;
-  font-weight: bold;
-}
-
-/* Поле + блок звуков */
-.cw-lu-main {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-.cw-lu-board,
-.cw-lu-soundbox {
-  flex-shrink: 0;           /* НИ поле, НИ звуки не сжимаются – сетка не ломается */
-}
-
-.cw-lu-board {
-  display: inline-grid;
-  gap: 1px;
-  background: #555;
-  padding: 1px;
-  grid-auto-rows: 24px;     /* фиксированная высота строки */
-}
-
-.cw-lu-cell {
-  width: 24px !important;   /* квадратные клетки */
-  height: 24px !important;
-  line-height: 24px;
-  background: #999;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  user-select: none;
-  transition: background-color 0.1s;
-  padding: 0;
-}
-.cw-lu-cell:hover { filter: brightness(1.1); }
-.cw-lu-cell.cw-lu-revealed {
-  background: #ccc;
-  cursor: default;
-  color: #000;
-}
-.cw-lu-cell.cw-lu-flag {
-  background: #666;
-  color: #ffa500;
-}
-.cw-lu-cell.cw-lu-mine {
-  background: #c33;
-  color: #fff;
-}
-.cw-lu-cell.cw-lu-mine-hit {
-  background: #f00;
-  transform: scale(1.1);
-}
-.cw-lu-cell.cw-lu-hint-reveal {
-  background: #f70;
-  color: #000;
-}
-.cw-lu-cell.cw-lu-path-highlight {
-  background-color: rgba(0, 255, 0, 0.3) !important;
-}
-.cw-lu-cell.cw-lu-radius-highlight {
-  background-color: rgba(150, 100, 255, 0.4) !important;
-}
-
-.cw-lu-n1{color:#00f}
-.cw-lu-n2{color:#008000}
-.cw-lu-n3{color:#f00}
-.cw-lu-n4{color:#000080}
-.cw-lu-n5{color:#800000}
-.cw-lu-n6{color:#008080}
-.cw-lu-n7{color:#000}
-.cw-lu-n8{color:#808080}
-
-.cw-lu-exit { box-shadow: 0 0 0 2px #0f0 inset; }
-.cw-lu-base-safe { box-shadow: 0 0 0 2px #0af inset; }
-
-/* панель звуков */
-.cw-lu-soundbox {
-  background: #2a2a2a;
-  border-radius: 3px;
-  padding: 4px 6px;
-  font-size: 11px;
-  min-width: 170px;
-}
-.cw-lu-sound-title {
-  font-weight: bold;
-  margin-bottom: 3px;
-}
-.cw-lu-sound-row {
-  padding: 1px 3px;
-  border-radius: 2px;
-  white-space: nowrap;
-}
-.cw-lu-sound-row + .cw-lu-sound-row { margin-top: 1px; }
-.cw-lu-sound-active {
-  background: #555;
-}
-    `;
-    document.head.appendChild(style);
-
-    const root = document.createElement('div');
-    root.id = 'cw-lu-trainer-root';
-    document.body.appendChild(root);
-
-    root.innerHTML = `
-      <div class="cw-lu-window">
-        <div class="cw-lu-header">
-          <span class="cw-lu-title">Тренажёр Лазания v1.0</span>
-          <div class="cw-lu-controls">
-            <button id="cw-lu-restart">Новая игра</button>
-          </div>
-        </div>
-
-        <div class="cw-lu-settings">
-          <label>Высота
-            <input type="number" id="setting-height" value="1" min="1" max="5">
-          </label>
-          <label>ЛУ
-            <input type="number" id="setting-lu" value="5" min="0" max="9">
-          </label>
-          <label>Погода
-            <select id="setting-weather">
-              <option value="0">Тепло</option>
-              <option value="3">Холодно</option>
-              <option value="5">Очень холодно</option>
-            </select>
-          </label>
-          <label>Рост
-            <select id="setting-growth">
-              <option value="0">Масик</option>
-              <option value="2">Обычный</option>
-              <option value="4">Жир</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="cw-lu-status">
-          <span>Бомб: <span id="lu-bombs">0</span></span>
-          <span>Время: <span id="lu-timer">0</span>с</span>
-          <span id="lu-message" class="cw-lu-message"></span>
-        </div>
-
-        <div class="cw-lu-main">
-          <div id="lu-board" class="cw-lu-board"></div>
-          <div class="cw-lu-soundbox">
-            <div class="cw-lu-sound-title">Звук клетки</div>
-            <div class="cw-lu-sound-row" data-sound="0">[0] Без звука</div>
-            <div class="cw-lu-sound-row" data-sound="1">[1] Едва различимый звук</div>
-            <div class="cw-lu-sound-row" data-sound="2">[2] Тихий звук</div>
-            <div class="cw-lu-sound-row" data-sound="3">[3] Приглушённый звук</div>
-            <div class="cw-lu-sound-row" data-sound="4">[4] Громкий звук</div>
-            <div class="cw-lu-sound-row" data-sound="5">[5] Очень громкий звук</div>
-            <div class="cw-lu-sound-row" data-sound="6">[6] Очень громкий звук (громче)</div>
-            <div class="cw-lu-sound-row" data-sound="7">[7] Очень громкий звук (максимум)</div>
-            <div class="cw-lu-sound-row" data-sound="danger">[X] Опасная клетка</div>
-            <div class="cw-lu-sound-row" data-sound="hint">[?] Подсказка (замечена бомба)</div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    const boardEl    = root.querySelector('#lu-board');
-    const restartBtn = root.querySelector('#cw-lu-restart');
-    const minesEl    = root.querySelector('#lu-bombs');
-    const timerEl    = root.querySelector('#lu-timer');
-    const msgEl      = root.querySelector('#lu-message');
-
-    const heightInput  = root.querySelector('#setting-height');
-    const luInput      = root.querySelector('#setting-lu');
-    const weatherInput = root.querySelector('#setting-weather');
-    const growthInput  = root.querySelector('#setting-growth');
-
-    let game = null;
-
-    // ----- звук панели -----
-    function highlightSound(key) {
-      const box = root.querySelector('.cw-lu-soundbox');
-      if (!box) return;
-      box.querySelectorAll('.cw-lu-sound-row').forEach(row => {
-        row.classList.toggle('cw-lu-sound-active', row.dataset.sound === String(key));
-      });
-    }
-    function updateSoundForValue(val) {
-      if (val <= 0) highlightSound('0');
-      else if (val >= 7) highlightSound('7');
-      else highlightSound(String(val));
-    }
-
-    // ----- настройки -----
-    function readSettings() {
-      let height = parseInt(heightInput.value, 10);
-      let lu     = parseInt(luInput.value, 10);
-      if (isNaN(height)) height = 1;
-      if (isNaN(lu))     lu = 0;
-      height = Math.min(5, Math.max(1, height));
-      lu     = Math.min(9, Math.max(0, lu));
-      heightInput.value = String(height);
-      luInput.value     = String(lu);
-
-      const weatherBonus = parseInt(weatherInput.value, 10) || 0;
-      const growthBonus  = parseInt(growthInput.value, 10) || 0;
-
-      const minesCount   = 8 + (height * 2) + weatherBonus + growthBonus;
-      const baseSafeCount= (height === 1) ? 5 : 3;
-      const baseSafeCells= Array.from({ length: baseSafeCount }, (_, i) => ({ r: 0, c: i }));
-
-      return { height, lu, mines: minesCount, baseSafeCells };
-    }
-
-    // ----- новая игра -----
-    function startNewGame() {
-      stopTimer();
-      const settings = readSettings();
-      game = {
-        rows: 6,
-        cols: 10,
-        height: settings.height,
-        lu: settings.lu,
-        mines: settings.mines,
-        baseSafeCells: settings.baseSafeCells,
-        startCoord: { r: 5, c: 0 },
-        exitCoord:  { r: 0, c: 9 },
-        cells: [],
-        revealedSafeCount: 0,
-        timerId: null,
-        startTime: null,
-        started: false,
-        gameOver: false,
-      };
-      generateBoard();
-      renderBoard();
-      updateAllDisplays();
-      highlightSound('0');
-      if (msgEl) msgEl.textContent = 'ЛКМ — прыгать по клеткам, ПКМ — ставить флажки.';
-    }
-
-    // ----- генерация поля -----
-    function generateBoard() {
-      game.cells = Array.from({ length: game.rows }, (_, r) =>
-        Array.from({ length: game.cols }, (_, c) => ({
-          r, c,
-          hasMine: false,
-          value: 0,
-          isRevealed: false,
-          isFlagged: false,
-          isPath: false,
-          isAutoHintActive: false,
-          el: null,
-        }))
-      );
-
-      const pathCells = buildSafePath();
-      const safeZone  = new Set(pathCells.map(p => `${p.r},${p.c}`));
-      safeZone.add(`${game.startCoord.r},${game.startCoord.c}`);
-      game.baseSafeCells.forEach(p => safeZone.add(`${p.r},${p.c}`));
-      safeZone.add(`${game.exitCoord.r},${game.exitCoord.c}`);
-
-      pathCells.forEach(p => {
-        if (p.r >= 0 && p.r < game.rows && p.c >= 0 && p.c < game.cols) {
-          game.cells[p.r][p.c].isPath = true;
-        }
-      });
-
-      const candidates = game.cells.flat().filter(cell => !safeZone.has(`${cell.r},${cell.c}`));
-      shuffle(candidates);
-      const minesToPlace = Math.min(game.mines, candidates.length);
-      game.mines = minesToPlace;
-      for (let i = 0; i < minesToPlace; i++) candidates[i].hasMine = true;
-
-      game.cells.flat().forEach(cell => { cell.value = calculateRadiusValue(cell.r, cell.c); });
-    }
-
-    function buildSafePath() {
-      const pathSet = new Set();
-      const add = (r, c) => pathSet.add(r + ',' + c);
-      const inBounds = (r, c) => r >= 0 && r < game.rows && c >= 0 && c < game.cols;
-      const cheb = (r, c, tr, tc) => Math.max(Math.abs(r - tr), Math.abs(c - tc));
-
-      add(game.startCoord.r, game.startCoord.c);
-      game.baseSafeCells.forEach(b => add(b.r, b.c));
-
-      const exits = [game.exitCoord];
-      const DIRS8 = [
-        { dr:-1,dc:0 },{ dr:1,dc:0 },
-        { dr:0,dc:-1 },{ dr:0,dc:1 },
-        { dr:-1,dc:-1},{ dr:-1,dc:1 },
-        { dr:1,dc:-1 },{ dr:1,dc:1 },
-      ];
-
-      exits.forEach(exit => {
-        const startFrom = game.baseSafeCells[Math.floor(Math.random()*game.baseSafeCells.length)];
-        let cur = { r:startFrom.r, c:startFrom.c };
-        add(cur.r, cur.c);
-        let guard=0;
-        while ((cur.r!==exit.r || cur.c!==exit.c) && guard++<200) {
-          const curDist = cheb(cur.r,cur.c,exit.r,exit.c);
-          const better=[];
-          for (const d of DIRS8) {
-            const nr=cur.r+d.dr, nc=cur.c+d.dc;
-            if (!inBounds(nr,nc)) continue;
-            const nd=cheb(nr,nc,exit.r,exit.c);
-            if (nd<curDist) better.push({r:nr,c:nc});
-          }
-          if (!better.length) break;
-          cur = better[Math.floor(Math.random()*better.length)];
-          add(cur.r,cur.c);
-        }
-        add(exit.r,exit.c);
-      });
-
-      return Array.from(pathSet).map(key => {
-        const [r,c]=key.split(',').map(Number); return {r,c};
-      });
-    }
-
-    function calculateRadiusValue(r, c) {
-      let mineCount=0;
-      for (let dr=-1;dr<=1;dr++) for (let dc=-1;dc<=1;dc++) {
-        const nr=r+dr,nc=c+dc;
-        if (nr<0||nr>=game.rows||nc<0||nc>=game.cols) continue;
-        if (game.cells[nr][nc].hasMine) mineCount++;
-      }
-      return mineCount;
-    }
-
-    function shuffle(arr){
-      for(let i=arr.length-1;i>0;i--){
-        const j=Math.floor(Math.random()*(i+1));
-        [arr[i],arr[j]]=[arr[j],arr[i]];
-      }
-    }
-
-    // ----- шанс авто-подсказки -----
-    function getHintChance() {
-      if (!game || game.lu < HINT_LU_REQUIRED) return 0;
-      const luNorm=(game.lu-HINT_LU_REQUIRED)/(9-HINT_LU_REQUIRED);
-      const luClamped=Math.max(0,Math.min(1,luNorm));
-      const hNorm=(5-game.height)/(5-1);
-      const hClamped=Math.max(0,Math.min(1,hNorm));
-      const luBonus    = LU_HINT_MAX_BONUS*luClamped;
-      const heightBonus= HEIGHT_HINT_BONUS*hClamped;
-      const chance=BASE_HINT_CHANCE+luBonus+heightBonus;
-      return Math.min(HINT_CHANCE_MAX,chance);
-    }
-
-    // ----- отрисовка -----
-    function renderBoard() {
-      boardEl.innerHTML='';
-      boardEl.style.gridTemplateColumns = `repeat(${game.cols}, 24px)`;
-
-      game.cells.flat().forEach(cell=>{
-        const el=document.createElement('div');
-        el.className='cw-lu-cell';
-        el.addEventListener('click',()=>handleLeftClick(cell));
-        el.addEventListener('contextmenu',e=>{e.preventDefault();handleRightClick(cell);});
-        el.addEventListener('mouseenter',()=>{if(cell.isRevealed && !cell.hasMine)highlightRadius(cell.r,cell.c,true);});
-        el.addEventListener('mouseleave',()=>{if(cell.isRevealed && !cell.hasMine)highlightRadius(cell.r,cell.c,false);});
-        cell.el=el;
-        boardEl.appendChild(el);
-      });
-
-      game.baseSafeCells.forEach(p=>{
-        if(p.r>=0&&p.r<game.rows&&p.c>=0&&p.c<game.cols){
-          game.cells[p.r][p.c].el.classList.add('cw-lu-base-safe');
-        }
-      });
-      const ex=game.exitCoord;
-      if(ex.r>=0&&ex.r<game.rows&&ex.c>=0&&ex.c<game.cols){
-        game.cells[ex.r][ex.c].el.classList.add('cw-lu-exit');
-      }
-    }
-
-    function highlightRadius(r,c,add){
-      for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
-        const nr=r+dr,nc=c+dc;
-        if(nr<0||nr>=game.rows||nc<0||nc>=game.cols)continue;
-        game.cells[nr][nc].el.classList.toggle('cw-lu-radius-highlight',add);
-      }
-    }
-
-    // ----- авто-подсказка -----
-    function maybeShowAutoHint(centerCell){
-      if(!game||game.gameOver)return;
-      if(game.lu<HINT_LU_REQUIRED)return;
-      const candidates=[];
-      for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
-        if(dr===0&&dc===0)continue;
-        const nr=centerCell.r+dr,nc=centerCell.c+dc;
-        if(nr<0||nr>=game.rows||nc<0||nc>=game.cols)continue;
-        const c=game.cells[nr][nc];
-        if(c.hasMine&&!c.isRevealed&&!c.isAutoHintActive)candidates.push(c);
-      }
-      if(!candidates.length)return;
-      const chance=getHintChance();
-      if(Math.random()>chance)return;
-      const cell=candidates[Math.floor(Math.random()*candidates.length)];
-      showAutoHint(cell);
-    }
-
-    function showAutoHint(cell){
-      if(cell.isAutoHintActive||cell.isRevealed)return;
-      cell.isAutoHintActive=true;
-      const el=cell.el;
-      const prevText=el.textContent;
-      const prevFlagged=cell.isFlagged;
-      el.classList.remove('cw-lu-flag');
-      el.textContent='!';
-      el.classList.add('cw-lu-hint-reveal');
-      highlightSound('hint');
-      setTimeout(()=>{
-        if(!game)return;
-        cell.isAutoHintActive=false;
-        if(!cell.isRevealed){
-          el.classList.remove('cw-lu-hint-reveal');
-          if(prevFlagged){
-            cell.isFlagged=true;
-            el.textContent='X';
-            el.classList.add('cw-lu-flag');
-          }else{
-            el.textContent=prevText||'';
-          }
-        }
-      },HINT_DURATION_MS);
-    }
-
-    // ----- клики -----
-    function handleLeftClick(cell){
-      if(!game||game.gameOver)return;
-      if(!game.started){game.started=true;startTimer();}
-      if(cell.isRevealed && !cell.hasMine){
-        updateSoundForValue(cell.value);
-        maybeShowAutoHint(cell);
-        return;
-      }
-      if(cell.isRevealed && cell.hasMine)return;
-
-      if(cell.isFlagged){
-        cell.isFlagged=false;
-        cell.el.classList.remove('cw-lu-flag');
-        cell.el.textContent='';
-      }
-      cell.isRevealed=true;
-
-      if(cell.hasMine){
-        highlightSound('danger');
-        endGame(false,cell,'Провал: попал на опасную клетку.');
-        return;
-      }
-
-      game.revealedSafeCount++;
-      const el=cell.el;
-      el.classList.add('cw-lu-revealed');
-      if(cell.value>0){
-        el.textContent=cell.value;
-        el.classList.add('cw-lu-n'+Math.min(cell.value,8));
-      }else el.textContent='0';
-
-      updateSoundForValue(cell.value);
-      maybeShowAutoHint(cell);
-      checkWin();
-    }
-
-    function handleRightClick(cell){
-      if(!game||game.gameOver||cell.isRevealed)return;
-      cell.isFlagged=!cell.isFlagged;
-      if(cell.isFlagged){
-        cell.el.textContent='X';
-        cell.el.classList.add('cw-lu-flag');
-      }else{
-        cell.el.textContent='';
-        cell.el.classList.remove('cw-lu-flag');
-      }
-    }
-
-    // ----- конец игры -----
-    function endGame(isWin,clickedCell,message){
-      if(!game||game.gameOver)return;
-      game.gameOver=true;
-      stopTimer();
-      if(msgEl)msgEl.textContent=message||(isWin?'Карта готова!':'Провал.');
-      game.cells.flat().forEach(cell=>{
-        if(cell.isPath)cell.el.classList.add('cw-lu-path-highlight');
-        if(cell.hasMine&&!cell.isRevealed){
-          cell.el.textContent='X';
-          cell.el.classList.remove('cw-lu-flag');
-          cell.el.classList.add('cw-lu-mine');
-        }
-      });
-      if(clickedCell)clickedCell.el.classList.add('cw-lu-mine-hit');
-      updateAllDisplays();
-    }
-
-    function checkWin(){
-      const total=game.rows*game.cols;
-      const safe =total-game.mines;
-      if(game.revealedSafeCount>=safe){
-        highlightSound('0');
-        endGame(true,null,'Карта готова, можно спокойно идти дальше.');
-      }
-    }
-
-    // ----- таймер -----
-    function startTimer(){
-      if(!game||game.timerId!=null)return;
-      game.startTime=Date.now();
-      game.timerId=setInterval(updateAllDisplays,1000);
-    }
-    function stopTimer(){
-      if(game&&game.timerId!=null){
-        clearInterval(game.timerId);
-        game.timerId=null;
-      }
-    }
-
-    // ----- обновление статуса -----
-    function updateAllDisplays(){
-      if(!game)return;
-      if(minesEl)minesEl.textContent=String(game.mines);
-      if(timerEl){
-        if(game.started&&!game.gameOver){
-          const sec=Math.floor((Date.now()-game.startTime)/1000);
-          timerEl.textContent=String(sec);
-        }else timerEl.textContent='0';
-      }
-    }
-
-    restartBtn.addEventListener('click',startNewGame);
-    boardEl.addEventListener('contextmenu',e=>e.preventDefault());
-
-    startNewGame();
+  // ---- Звуки ----
+  function highlightSound(key) {
+    const box = root.querySelector('.cw-lu-soundbox');
+    if (!box) return;
+    box.querySelectorAll('.cw-lu-sound-row').forEach(row => {
+      row.classList.toggle('cw-lu-sound-active', row.dataset.sound === String(key));
+    });
+  }
+  function updateSoundForValue(val) {
+    if (val <= 0) highlightSound('0');
+    else if (val >= 7) highlightSound('7');
+    else highlightSound(String(val));
   }
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
-  else init();
+  // ---- Настройки ----
+  function readSettings() {
+    let height = parseInt(heightInput.value, 10);
+    let lu     = parseInt(luInput.value, 10);
+    if (isNaN(height)) height = 1;
+    if (isNaN(lu))     lu = 0;
+    height = Math.min(5, Math.max(1, height));
+    lu     = Math.min(9, Math.max(0, lu));
+    heightInput.value = String(height);
+    luInput.value     = String(lu);
+
+    const weatherBonus = parseInt(weatherInput.value, 10) || 0;
+    const growthBonus  = parseInt(growthInput.value, 10) || 0;
+
+    const minesCount   = 8 + (height * 2) + weatherBonus + growthBonus;
+    const baseSafeCount= (height === 1) ? 5 : 3;
+    const baseSafeCells= Array.from({ length: baseSafeCount }, (_, i) => ({ r: 0, c: i }));
+
+    return { height, lu, mines: minesCount, baseSafeCells };
+  }
+
+  // ---- Новая игра ----
+  function startNewGame() {
+    stopTimer();
+    const settings = readSettings();
+    game = {
+      rows: 6,
+      cols: 10,
+      height: settings.height,
+      lu: settings.lu,
+      mines: settings.mines,
+      baseSafeCells: settings.baseSafeCells,
+      startCoord: { r: 5, c: 0 },
+      exitCoord:  { r: 0, c: 9 },
+      cells: [],
+      revealedSafeCount: 0,
+      timerId: null,
+      startTime: null,
+      started: false,
+      gameOver: false,
+    };
+    generateBoard();
+    renderBoard();
+    updateAllDisplays();
+    highlightSound('0');
+    if (msgEl) msgEl.textContent = 'ЛКМ — прыгать по клеткам, ПКМ — ставить флажки.';
+  }
+
+  // ---- Генерация поля ----
+  function generateBoard() {
+    game.cells = Array.from({ length: game.rows }, (_, r) =>
+      Array.from({ length: game.cols }, (_, c) => ({
+        r, c,
+        hasMine: false,
+        value: 0,
+        isRevealed: false,
+        isFlagged: false,
+        isPath: false,
+        isAutoHintActive: false,
+        el: null,
+      }))
+    );
+
+    const pathCells = buildSafePath();
+    const safeZone  = new Set(pathCells.map(p => `${p.r},${p.c}`));
+    safeZone.add(`${game.startCoord.r},${game.startCoord.c}`);
+    game.baseSafeCells.forEach(p => safeZone.add(`${p.r},${p.c}`));
+    safeZone.add(`${game.exitCoord.r},${game.exitCoord.c}`);
+
+    pathCells.forEach(p => {
+      if (p.r >= 0 && p.r < game.rows && p.c >= 0 && p.c < game.cols) {
+        game.cells[p.r][p.c].isPath = true;
+      }
+    });
+
+    const candidates = game.cells.flat().filter(cell => !safeZone.has(`${cell.r},${cell.c}`));
+    shuffle(candidates);
+    const minesToPlace = Math.min(game.mines, candidates.length);
+    game.mines = minesToPlace;
+    for (let i = 0; i < minesToPlace; i++) candidates[i].hasMine = true;
+
+    game.cells.flat().forEach(cell => { cell.value = calculateRadiusValue(cell.r, cell.c); });
+  }
+
+  function buildSafePath() {
+    const pathSet = new Set();
+    const add = (r, c) => pathSet.add(r + ',' + c);
+    const inBounds = (r, c) => r >= 0 && r < game.rows && c >= 0 && c < game.cols;
+    const cheb = (r, c, tr, tc) => Math.max(Math.abs(r - tr), Math.abs(c - tc));
+
+    add(game.startCoord.r, game.startCoord.c);
+    game.baseSafeCells.forEach(b => add(b.r, b.c));
+
+    const exits = [game.exitCoord];
+    const DIRS8 = [
+      { dr:-1,dc:0 },{ dr:1,dc:0 },
+      { dr:0,dc:-1 },{ dr:0,dc:1 },
+      { dr:-1,dc:-1},{ dr:-1,dc:1 },
+      { dr:1,dc:-1 },{ dr:1,dc:1 },
+    ];
+
+    exits.forEach(exit => {
+      const startFrom = game.baseSafeCells[Math.floor(Math.random()*game.baseSafeCells.length)];
+      let cur = { r:startFrom.r, c:startFrom.c };
+      add(cur.r, cur.c);
+      let guard=0;
+      while ((cur.r!==exit.r || cur.c!==exit.c) && guard++<200) {
+        const curDist = cheb(cur.r,cur.c,exit.r,exit.c);
+        const better=[];
+        for (const d of DIRS8) {
+          const nr=cur.r+d.dr, nc=cur.c+d.dc;
+          if (!inBounds(nr,nc)) continue;
+          const nd=cheb(nr,nc,exit.r,exit.c);
+          if (nd<curDist) better.push({r:nr,c:nc});
+        }
+        if (!better.length) break;
+        cur = better[Math.floor(Math.random()*better.length)];
+        add(cur.r,cur.c);
+      }
+      add(exit.r,exit.c);
+    });
+
+    return Array.from(pathSet).map(key => {
+      const [r,c]=key.split(',').map(Number); return {r,c};
+    });
+  }
+
+  function calculateRadiusValue(r, c) {
+    let mineCount=0;
+    for (let dr=-1;dr<=1;dr++) for (let dc=-1;dc<=1;dc++) {
+      const nr=r+dr,nc=c+dc;
+      if (nr<0||nr>=game.rows||nc<0||nc>=game.cols) continue;
+      if (game.cells[nr][nc].hasMine) mineCount++;
+    }
+    return mineCount;
+  }
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+  }
+
+  // ---- шанс подсказки ----
+  function getHintChance() {
+    if (!game || game.lu < HINT_LU_REQUIRED) return 0;
+    const luNorm   = (game.lu - HINT_LU_REQUIRED) / (9 - HINT_LU_REQUIRED);
+    const luClamped= Math.max(0, Math.min(1, luNorm));
+    const hNorm    = (5 - game.height) / (5 - 1);
+    const hClamped = Math.max(0, Math.min(1, hNorm));
+    const luBonus     = LU_HINT_MAX_BONUS * luClamped;
+    const heightBonus = HEIGHT_HINT_BONUS  * hClamped;
+    const chance = BASE_HINT_CHANCE + luBonus + heightBonus;
+    return Math.min(HINT_CHANCE_MAX, chance);
+  }
+
+  // ---- отрисовка ----
+  function renderBoard() {
+    boardEl.innerHTML='';
+    boardEl.style.gridTemplateColumns = `repeat(${game.cols}, 24px)`;
+
+    game.cells.flat().forEach(cell=>{
+      const el=document.createElement('div');
+      el.className='cw-lu-cell';
+      el.addEventListener('click',()=>handleLeftClick(cell));
+      el.addEventListener('contextmenu',e=>{e.preventDefault();handleRightClick(cell);});
+      el.addEventListener('mouseenter',()=>{if(cell.isRevealed && !cell.hasMine)highlightRadius(cell.r,cell.c,true);});
+      el.addEventListener('mouseleave',()=>{if(cell.isRevealed && !cell.hasMine)highlightRadius(cell.r,cell.c,false);});
+      cell.el=el;
+      boardEl.appendChild(el);
+    });
+
+    game.baseSafeCells.forEach(p=>{
+      if(p.r>=0&&p.r<game.rows&&p.c>=0&&p.c<game.cols){
+        game.cells[p.r][p.c].el.classList.add('cw-lu-base-safe');
+      }
+    });
+    const ex=game.exitCoord;
+    if(ex.r>=0&&ex.r<game.rows&&ex.c>=0&&ex.c<game.cols){
+      game.cells[ex.r][ex.c].el.classList.add('cw-lu-exit');
+    }
+  }
+
+  function highlightRadius(r,c,add){
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+      const nr=r+dr,nc=c+dc;
+      if(nr<0||nr>=game.rows||nc<0||nc>=game.cols)continue;
+      game.cells[nr][nc].el.classList.toggle('cw-lu-radius-highlight',add);
+    }
+  }
+
+  // ---- авто-подсказка ----
+  function maybeShowAutoHint(centerCell){
+    if(!game||game.gameOver)return;
+    if(game.lu<HINT_LU_REQUIRED)return;
+
+    const candidates=[];
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+      if(dr===0&&dc===0)continue;
+      const nr=centerCell.r+dr,nc=centerCell.c+dc;
+      if(nr<0||nr>=game.rows||nc<0||nc>=game.cols)continue;
+      const c=game.cells[nr][nc];
+      if(c.hasMine && !c.isRevealed && !c.isAutoHintActive && !c.isFlagged){
+        candidates.push(c); // не трогаем уже отмеченные флажком
+      }
+    }
+    if(!candidates.length)return;
+
+    const chance=getHintChance();
+    if(Math.random()>chance)return;
+
+    const cell=candidates[Math.floor(Math.random()*candidates.length)];
+    showAutoHint(cell);
+  }
+
+  function showAutoHint(cell){
+    if(cell.isAutoHintActive||cell.isRevealed)return;
+    cell.isAutoHintActive=true;
+    const el=cell.el;
+    const prevText   = el.textContent;
+    const prevFlagged= cell.isFlagged;
+
+    el.classList.remove('cw-lu-flag');
+    el.textContent='!';
+    el.classList.add('cw-lu-hint-reveal');
+    highlightSound('hint');
+
+    setTimeout(()=>{
+      if(!game)return;
+      cell.isAutoHintActive=false;
+      if(!cell.isRevealed){
+        el.classList.remove('cw-lu-hint-reveal');
+        if(prevFlagged){
+          cell.isFlagged=true;
+          el.textContent='X';
+          el.classList.add('cw-lu-flag');
+        }else{
+          el.textContent=prevText||'';
+        }
+      }
+    },HINT_DURATION_MS);
+  }
+
+  // ---- клики ----
+  function handleLeftClick(cell){
+    if(!game||game.gameOver)return;
+
+    if(!game.started){game.started=true;startTimer();}
+
+    // повторный шаг по уже открытой безопасной клетке
+    if(cell.isRevealed && !cell.hasMine){
+      updateSoundForValue(cell.value);
+      maybeShowAutoHint(cell);
+      return;
+    }
+
+    if(cell.isRevealed && cell.hasMine)return;
+
+    if(cell.isFlagged){
+      cell.isFlagged=false;
+      cell.el.classList.remove('cw-lu-flag');
+      cell.el.textContent='';
+    }
+
+    cell.isRevealed=true;
+
+    if(cell.hasMine){
+      highlightSound('danger');
+      endGame(false,cell,'Провал: попал на опасную клетку.');
+      return;
+    }
+
+    game.revealedSafeCount++;
+
+    const el=cell.el;
+    el.classList.add('cw-lu-revealed');
+    if(cell.value>0){
+      el.textContent=cell.value;
+      el.classList.add('cw-lu-n'+Math.min(cell.value,8));
+    }else el.textContent='0';
+
+    updateSoundForValue(cell.value);
+    maybeShowAutoHint(cell);
+    checkWin();
+  }
+
+  function handleRightClick(cell){
+    if(!game||game.gameOver||cell.isRevealed)return;
+    cell.isFlagged=!cell.isFlagged;
+    if(cell.isFlagged){
+      cell.el.textContent='X';
+      cell.el.classList.add('cw-lu-flag');
+    }else{
+      cell.el.textContent='';
+      cell.el.classList.remove('cw-lu-flag');
+    }
+  }
+
+  // ---- конец игры ----
+  function endGame(isWin,clickedCell,message){
+    if(!game||game.gameOver)return;
+    game.gameOver=true;
+    stopTimer();
+    if(msgEl)msgEl.textContent = message || (isWin?'Карта готова!':'Провал.');
+    game.cells.flat().forEach(cell=>{
+      if(cell.isPath)cell.el.classList.add('cw-lu-path-highlight');
+      if(cell.hasMine&&!cell.isRevealed){
+        cell.el.textContent='X';
+        cell.el.classList.remove('cw-lu-flag');
+        cell.el.classList.add('cw-lu-mine');
+      }
+    });
+    if(clickedCell)clickedCell.el.classList.add('cw-lu-mine-hit');
+    updateAllDisplays();
+  }
+
+  function checkWin(){
+    const total=game.rows*game.cols;
+    const safe =total-game.mines;
+    if(game.revealedSafeCount>=safe){
+      highlightSound('0');
+      endGame(true,null,'Карта готова, можно спокойно идти дальше.');
+    }
+  }
+
+  // ---- таймер ----
+  function startTimer(){
+    if(!game||game.timerId!=null)return;
+    game.startTime=Date.now();
+    game.timerId=setInterval(updateAllDisplays,1000);
+  }
+  function stopTimer(){
+    if(game&&game.timerId!=null){
+      clearInterval(game.timerId);
+      game.timerId=null;
+    }
+  }
+
+  // ---- статус ----
+  function updateAllDisplays(){
+    if(!game)return;
+    if(minesEl)minesEl.textContent=String(game.mines);
+    if(timerEl){
+      if(game.started&&!game.gameOver){
+        const sec=Math.floor((Date.now()-game.startTime)/1000);
+        timerEl.textContent=String(sec);
+      }else timerEl.textContent='0';
+    }
+  }
+
+  restartBtn.addEventListener('click',startNewGame);
+  boardEl.addEventListener('contextmenu',e=>e.preventDefault());
+
+  startNewGame();
 
 })();
 </script>
